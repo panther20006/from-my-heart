@@ -227,7 +227,13 @@
   }
 
   /* -----------------------------------------------------------------
-     6. BACKGROUND AUDIO — optional, no autoplay, fails silently
+     6. BACKGROUND AUDIO
+     Browsers block audio-with-sound from autoplaying before any user
+     interaction, so a literal "plays the instant the page opens" isn't
+     possible everywhere. To get as close as possible: try to play
+     immediately on load, and if the browser blocks that, fall back to
+     starting on the very first interaction of ANY kind (not just the
+     "Open My Heart" button) — a stray click, tap, key press or scroll.
   ------------------------------------------------------------------ */
   const bgMusic = document.getElementById('bgMusic');
   const muteToggle = document.getElementById('muteToggle');
@@ -236,17 +242,37 @@
 
   function tryPlayMusic() {
     if (musicStarted || !bgMusic) return;
-    musicStarted = true;
 
     bgMusic.volume = 0.35;
     const playPromise = bgMusic.play();
 
     if (playPromise && typeof playPromise.then === 'function') {
       playPromise
-        .then(() => { muteToggle.hidden = false; })
-        .catch(() => { muteToggle.hidden = true; }); // placeholder missing/blocked — site still works
+        .then(() => {
+          musicStarted = true;
+          muteToggle.hidden = false;
+        })
+        .catch(() => {
+          // Autoplay blocked (or file missing) — try again on first interaction.
+          muteToggle.hidden = true;
+        });
+    } else {
+      musicStarted = true;
     }
   }
+
+  // Attempt immediately on load
+  tryPlayMusic();
+
+  // Fallback: first interaction of any kind starts it, then stops listening
+  const INTERACTION_EVENTS = ['click', 'touchstart', 'keydown', 'scroll'];
+  function onFirstInteraction() {
+    tryPlayMusic();
+    if (musicStarted) {
+      INTERACTION_EVENTS.forEach((evt) => document.removeEventListener(evt, onFirstInteraction));
+    }
+  }
+  INTERACTION_EVENTS.forEach((evt) => document.addEventListener(evt, onFirstInteraction, { passive: true }));
 
   muteToggle.addEventListener('click', () => {
     if (!bgMusic) return;
