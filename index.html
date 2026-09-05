@@ -1,82 +1,174 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>From My Heart ❤️</title>
-
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>From My Heart — For Elisha</title>
+<meta name="description" content="A heartfelt apology, written from the heart, for Elisha.">
+<link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-    <!-- Background -->
-    <div class="background"></div>
-    <div class="stars"></div>
+  <!-- ================= BACKGROUND LAYERS (persist across all pages) ================= -->
+  <canvas id="starfield" aria-hidden="true"></canvas>
+  <div id="floatingHearts" class="floating-hearts" aria-hidden="true"></div>
 
-    <!-- Floating Hearts -->
-    <div id="hearts"></div>
+  <!-- ================= PROGRESS DOTS ================= -->
+  <nav class="page-dots" id="pageDots" aria-label="Page progress">
+    <button class="dot" data-goto="1" aria-label="Page 1"></button>
+    <button class="dot" data-goto="2" aria-label="Page 2"></button>
+    <button class="dot" data-goto="3" aria-label="Page 3"></button>
+    <button class="dot" data-goto="4" aria-label="Page 4"></button>
+    <button class="dot" data-goto="5" aria-label="Page 5"></button>
+  </nav>
 
-    <!-- Main -->
-    <main class="container">
+  <!-- ================= PAGE 1 — LANDING ================= -->
+  <section class="page is-active" id="page1" data-page="1">
+    <div class="page-inner opening-screen">
 
-        <div class="heart-wrapper">
-            <div class="heart">❤</div>
-        </div>
+      <div class="hero-heart-wrap" aria-hidden="true">
+        <span class="heart-ring ring-1"></span>
+        <span class="heart-ring ring-2"></span>
+        <span class="heart-ring ring-3"></span>
+        <svg class="hero-heart" viewBox="0 0 32 29" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 28.5C16 28.5 1 19.5 1 9.5C1 4.25 5.03 1 9.25 1C12.02 1 14.5 2.5 16 5C17.5 2.5 19.98 1 22.75 1C26.97 1 31 4.25 31 9.5C31 19.5 16 28.5 16 28.5Z"/>
+        </svg>
+      </div>
 
-        <p class="small-text">A message...</p>
+      <p class="eyebrow">A message for Elisha&hellip;</p>
+      <h1 class="title">From My Heart</h1>
+      <div class="divider" aria-hidden="true"></div>
 
-        <h1 id="title">From My Heart</h1>
+      <p class="typing-line">
+        <span id="typingText"></span><span class="caret" aria-hidden="true">|</span>
+      </p>
 
-        <div class="line"></div>
+      <button class="btn-glow next-btn" data-next type="button">
+        <span>Open My Heart</span>
+        <span class="arrow" aria-hidden="true">&rarr;</span>
+      </button>
+    </div>
+  </section>
 
-        <p id="typing"></p>
+  <!-- ================= PAGE 2 — THE MESSAGE ================= -->
+  <section class="page" id="page2" data-page="2">
+    <div class="page-inner">
+      <div class="glass-card">
+        <div class="card-heart-glow" aria-hidden="true">&#10084;&#65039;</div>
+        <h2 class="card-title">I&rsquo;m Sorry, Elisha</h2>
 
-        <button id="openBtn">
-            <span>Open My Heart</span>
-            <span class="arrow">→</span>
+        <p class="card-message reveal-text">
+          I know that saying &ldquo;sorry&rdquo; cannot change what happened.<br>
+          But I genuinely mean it from the bottom of my heart.<br>
+          I never wanted to hurt you or make you feel bad.<br>
+          If my words or actions caused you pain, I&rsquo;m truly sorry.<br>
+          I can&rsquo;t change the past,<br>
+          but I can promise to learn from it.
+        </p>
+
+        <button class="btn-glow next-btn" data-next type="button">
+          <span>Continue</span>
+          <span class="arrow" aria-hidden="true">&rarr;</span>
         </button>
+      </div>
+    </div>
+  </section>
 
-    </main>
+  <!-- ================= PAGE 3 — REASONS ================= -->
+  <section class="page" id="page3" data-page="3">
+    <div class="page-inner">
+      <div class="glass-card">
+        <h2 class="card-title small">Why I&rsquo;m Sorry</h2>
 
-    <!-- Apology Card -->
-    <section class="message-screen" id="messageScreen">
+        <ul class="reason-list" id="reasonList">
+          <li class="reason-item">
+            <span class="reason-icon" aria-hidden="true">&#10084;&#65039;</span>
+            <span>Because your feelings matter more to me than being right.</span>
+          </li>
+          <li class="reason-item">
+            <span class="reason-icon" aria-hidden="true">&#10084;&#65039;</span>
+            <span>Because I hate knowing I made you upset, even for a moment.</span>
+          </li>
+          <li class="reason-item">
+            <span class="reason-icon" aria-hidden="true">&#10084;&#65039;</span>
+            <span>Because I should have thought before I spoke or acted.</span>
+          </li>
+          <li class="reason-item">
+            <span class="reason-icon" aria-hidden="true">&#10084;&#65039;</span>
+            <span>Because you deserve someone who does better, and I want to be that.</span>
+          </li>
+        </ul>
 
-        <div class="message-card">
+        <button class="btn-glow next-btn" data-next type="button">
+          <span>Continue</span>
+          <span class="arrow" aria-hidden="true">&rarr;</span>
+        </button>
+      </div>
+    </div>
+  </section>
 
-            <div class="mini-heart">❤</div>
+  <!-- ================= PAGE 4 — PROMISE ================= -->
+  <section class="page" id="page4" data-page="4">
+    <div class="page-inner">
+      <div class="glass-card">
+        <h2 class="card-title small">My Promise To You</h2>
 
-            <h2>I'm Sorry</h2>
+        <ul class="promise-list" id="promiseList">
+          <li class="promise-item">
+            <span class="check" aria-hidden="true">&#10003;</span>
+            <span>I&rsquo;ll listen more, and actually hear you.</span>
+          </li>
+          <li class="promise-item">
+            <span class="check" aria-hidden="true">&#10003;</span>
+            <span>I&rsquo;ll think before I say something I&rsquo;ll regret.</span>
+          </li>
+          <li class="promise-item">
+            <span class="check" aria-hidden="true">&#10003;</span>
+            <span>I&rsquo;ll own my mistakes instead of making excuses.</span>
+          </li>
+          <li class="promise-item">
+            <span class="check" aria-hidden="true">&#10003;</span>
+            <span>I&rsquo;ll keep choosing to be better for you, every day.</span>
+          </li>
+        </ul>
 
-            <p class="message">
-                I know that saying “sorry” cannot change what happened.
-                But I genuinely mean it from the bottom of my heart.
-            </p>
+        <button class="btn-glow next-btn" data-next type="button">
+          <span>Continue</span>
+          <span class="arrow" aria-hidden="true">&rarr;</span>
+        </button>
+      </div>
+    </div>
+  </section>
 
-            <p class="message">
-                I never wanted to hurt you or make you feel bad.
-                If my words or actions caused you pain, I'm truly sorry.
-            </p>
+  <!-- ================= PAGE 5 — FINAL ================= -->
+  <section class="page" id="page5" data-page="5">
+    <div class="page-inner">
+      <div class="glass-card" id="finalCard">
+        <div class="card-heart-glow" aria-hidden="true">&#10084;&#65039;</div>
+        <h2 class="card-title">Elisha,</h2>
+        <p class="card-message reveal-text">
+          I hope someday you can forgive me.<br>
+          Thank you for being patient with me. &#10084;&#65039;
+        </p>
+        <p class="signature">&mdash; Het Soni</p>
 
-            <p class="message">
-                I can't change the past,
-                but I can promise to learn from it.
-            </p>
+        <button class="btn-glow btn-final" id="heartBtn" type="button">
+          <span>With all my heart</span>
+          <span aria-hidden="true">&#10084;&#65039;</span>
+        </button>
+      </div>
+    </div>
+  </section>
+      </div>
+    </div>
+  </section>
 
-            <div class="final-line">
-                I hope someday you can forgive me. ❤️
-            </div>
+  <!-- Optional background music. Silently no-ops if the file is missing. -->
+  <audio id="bgMusic" src="assets/music.mp3" loop preload="none"></audio>
+  <button id="muteToggle" class="mute-toggle" type="button" aria-label="Toggle music" hidden>
+    <span id="muteIcon">&#9834;</span>
+  </button>
 
-            <button id="closeBtn">With all my heart ❤️</button>
-
-        </div>
-
-    </section>
-
-    <script src="script.js"></script>
-
+  <script src="script.js"></script>
 </body>
 </html>
-```

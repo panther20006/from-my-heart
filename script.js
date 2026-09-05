@@ -1,172 +1,260 @@
-```javascript
-document.addEventListener("DOMContentLoaded", () => {
+/* ===================================================================
+   FROM MY HEART — script.js (5-page cinematic version)
+   Vanilla JS only. Sections:
+   1. Starfield particles (canvas)
+   2. Floating hearts ambience
+   3. Typing animation
+   4. Page navigation (SPA-style, no reloads) + progress dots
+   5. Final page: surprise reveal + burst hearts
+   6. Background audio (safe, optional, no autoplay)
+   =================================================================== */
 
-    const typing = document.getElementById("typing");
-    const openBtn = document.getElementById("openBtn");
-    const closeBtn = document.getElementById("closeBtn");
-    const messageScreen = document.getElementById("messageScreen");
-    const container = document.querySelector(".container");
-    const heartsContainer = document.getElementById("hearts");
+(() => {
+  'use strict';
 
-    /* =========================
-       TYPING ANIMATION
-    ========================= */
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    const text =
-        "Some words are difficult to say... so I wrote them here.";
+  /* -----------------------------------------------------------------
+     1. STARFIELD
+  ------------------------------------------------------------------ */
+  const canvas = document.getElementById('starfield');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+  let starfieldRAF = null;
 
-    let index = 0;
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
 
-    function typeText() {
+  function createStars() {
+    const count = Math.min(120, Math.floor((window.innerWidth * window.innerHeight) / 9000));
+    stars = Array.from({ length: count }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.2 + 0.2,
+      baseAlpha: Math.random() * 0.5 + 0.15,
+      twinkleSpeed: Math.random() * 0.015 + 0.004,
+      phase: Math.random() * Math.PI * 2,
+      driftY: Math.random() * 0.06 + 0.02
+    }));
+  }
 
-        if (index < text.length) {
-
-            typing.textContent += text.charAt(index);
-
-            index++;
-
-            setTimeout(typeText, 45);
-
-        } else {
-
-            openBtn.style.opacity = "1";
-
-        }
+  function drawStars(time) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const star of stars) {
+      const twinkle = Math.sin(time * star.twinkleSpeed + star.phase) * 0.35 + 0.65;
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(255, 235, 245, ${star.baseAlpha * twinkle})`;
+      ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+      ctx.fill();
+      star.y -= star.driftY;
+      if (star.y < -5) star.y = canvas.height + 5;
     }
+    starfieldRAF = requestAnimationFrame(drawStars);
+  }
 
-    openBtn.style.opacity = "0";
-
-    setTimeout(typeText, 1000);
-
-
-    /* =========================
-       FLOATING HEARTS
-    ========================= */
-
-    function createHeart() {
-
-        const heart = document.createElement("div");
-
-        heart.classList.add("floating-heart");
-
-        heart.innerHTML = "❤";
-
-        const size = Math.random() * 18 + 10;
-
-        const left = Math.random() * 100;
-
-        const duration = Math.random() * 6 + 6;
-
-        const move =
-            (Math.random() * 160 - 80) + "px";
-
-        heart.style.left = left + "%";
-
-        heart.style.fontSize = size + "px";
-
-        heart.style.animationDuration =
-            duration + "s";
-
-        heart.style.setProperty(
-            "--move",
-            move
-        );
-
-        heartsContainer.appendChild(heart);
-
-        setTimeout(() => {
-
-            heart.remove();
-
-        }, duration * 1000);
+  function initStarfield() {
+    resizeCanvas();
+    createStars();
+    if (starfieldRAF) cancelAnimationFrame(starfieldRAF);
+    if (!reduceMotion) {
+      starfieldRAF = requestAnimationFrame(drawStars);
+    } else {
+      drawStars(0);
     }
+  }
 
-    setInterval(createHeart, 700);
+  window.addEventListener('resize', () => { resizeCanvas(); createStars(); });
+  initStarfield();
 
+  /* -----------------------------------------------------------------
+     2. FLOATING HEARTS
+  ------------------------------------------------------------------ */
+  const HEART_PATH = 'M16 28.5C16 28.5 1 19.5 1 9.5C1 4.25 5.03 1 9.25 1C12.02 1 14.5 2.5 16 5C17.5 2.5 19.98 1 22.75 1C26.97 1 31 4.25 31 9.5C31 19.5 16 28.5 16 28.5Z';
+  const floatingContainer = document.getElementById('floatingHearts');
 
-    /* =========================
-       OPEN MESSAGE
-    ========================= */
+  function makeHeartSVG() {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 32 29');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', HEART_PATH);
+    path.setAttribute('fill', 'currentColor');
+    svg.appendChild(path);
+    return svg;
+  }
 
-    openBtn.addEventListener("click", () => {
+  function spawnFloatingHeart() {
+    const heart = document.createElement('div');
+    heart.className = 'floating-heart';
 
-        messageScreen.classList.add("active");
+    const size = Math.random() * 18 + 12;
+    const left = Math.random() * 100;
+    const duration = Math.random() * 6 + 9;
+    const drift = (Math.random() * 60 - 30) + 'px';
+    const hue = Math.random() > 0.5 ? 'var(--color-red)' : 'var(--color-pink)';
 
-        container.style.filter = "blur(8px)";
+    heart.style.width = size + 'px';
+    heart.style.height = (size * 0.9) + 'px';
+    heart.style.left = left + 'vw';
+    heart.style.color = hue;
+    heart.style.setProperty('--drift', drift);
+    heart.style.animationDuration = duration + 's';
 
-        createHeartBurst();
+    heart.appendChild(makeHeartSVG());
+    floatingContainer.appendChild(heart);
+    setTimeout(() => heart.remove(), duration * 1000 + 500);
+  }
 
+  if (!reduceMotion) {
+    setInterval(spawnFloatingHeart, 1800);
+    spawnFloatingHeart();
+    setTimeout(spawnFloatingHeart, 700);
+  }
+
+  /* -----------------------------------------------------------------
+     3. TYPING ANIMATION (page 1 only)
+  ------------------------------------------------------------------ */
+  const typingTarget = document.getElementById('typingText');
+  const typingMessage = 'Some words are difficult to say... so I wrote them here.';
+  let typingStarted = false;
+
+  function typeText(el, text, speed = 42) {
+    let i = 0;
+    (function step() {
+      if (i <= text.length) {
+        el.textContent = text.slice(0, i);
+        i++;
+        setTimeout(step, speed);
+      }
+    })();
+  }
+
+  function startTypingOnce() {
+    if (typingStarted) return;
+    typingStarted = true;
+    setTimeout(() => typeText(typingTarget, typingMessage), 500);
+  }
+
+  /* -----------------------------------------------------------------
+     4. PAGE NAVIGATION (SPA-style, no reloads)
+  ------------------------------------------------------------------ */
+  const pages = Array.from(document.querySelectorAll('.page'));
+  const dots = Array.from(document.querySelectorAll('.dot'));
+  const TOTAL_PAGES = pages.length;
+  let currentPage = 1;
+  let isAnimating = false;
+
+  function updateDots() {
+    dots.forEach((dot) => {
+      const isCurrent = Number(dot.dataset.goto) === currentPage;
+      dot.setAttribute('aria-current', isCurrent ? 'true' : 'false');
     });
+  }
 
+  function goToPage(targetNum) {
+    targetNum = Math.min(Math.max(targetNum, 1), TOTAL_PAGES);
+    if (targetNum === currentPage || isAnimating) return;
+    isAnimating = true;
 
-    /* =========================
-       CLOSE MESSAGE
-    ========================= */
+    const outgoing = document.getElementById('page' + currentPage);
+    const incoming = document.getElementById('page' + targetNum);
 
-    closeBtn.addEventListener("click", () => {
+    outgoing.classList.add('is-leaving');
+    outgoing.classList.remove('is-active');
+    incoming.classList.add('is-active');
 
-        messageScreen.classList.remove("active");
+    currentPage = targetNum;
+    updateDots();
 
-        container.style.filter = "blur(0)";
+    // Trigger music (safe no-op if already started / file missing)
+    tryPlayMusic();
 
-    });
+    // Page-specific entrance behaviour
+    if (targetNum === 1) startTypingOnce();
 
+    setTimeout(() => {
+      outgoing.classList.remove('is-leaving');
+      isAnimating = false;
+    }, 780);
+  }
 
-    /* =========================
-       HEART BURST
-    ========================= */
+  // Wire up every "next" button
+  document.querySelectorAll('[data-next]').forEach((btn) => {
+    btn.addEventListener('click', () => goToPage(currentPage + 1));
+  });
 
-    function createHeartBurst() {
+  // Wire up any button that jumps straight to a specific page (e.g. the surprise button)
+  document.querySelectorAll('[data-goto-page]').forEach((btn) => {
+    btn.addEventListener('click', () => goToPage(Number(btn.dataset.gotoPage)));
+  });
 
-        for (let i = 0; i < 25; i++) {
+  // Wire up progress dots
+  dots.forEach((dot) => {
+    dot.addEventListener('click', () => goToPage(Number(dot.dataset.goto)));
+  });
 
-            const heart = document.createElement("div");
+  updateDots();
+  startTypingOnce(); // page 1 is active on load
 
-            heart.classList.add("floating-heart");
+  // Final button: a warm little celebratory burst, nothing more
+  document.getElementById('heartBtn')?.addEventListener('click', function () {
+    burstHearts();
+    this.style.transform = 'scale(0.96)';
+    setTimeout(() => { this.style.transform = ''; }, 220);
+  });
 
-            heart.innerHTML = "❤";
+  /* -----------------------------------------------------------------
+     5. BURST HEARTS — small celebratory effect, reused where needed
+  ------------------------------------------------------------------ */
+  function burstHearts(count = 14) {
+    for (let i = 0; i < count; i++) {
+      setTimeout(() => {
+        const heart = document.createElement('div');
+        heart.className = 'burst-heart';
 
-            heart.style.left =
-                Math.random() * 100 + "%";
+        const size = Math.random() * 16 + 10;
+        heart.style.width = size + 'px';
+        heart.style.height = (size * 0.9) + 'px';
+        heart.style.left = (40 + Math.random() * 20) + '%';
+        heart.style.bottom = (10 + Math.random() * 10) + '%';
 
-            heart.style.bottom =
-                Math.random() * 50 + "%";
-
-            heart.style.fontSize =
-                Math.random() * 18 + 10 + "px";
-
-            heart.style.animationDuration =
-                Math.random() * 3 + 3 + "s";
-
-            heart.style.setProperty(
-                "--move",
-                (Math.random() * 300 - 150) + "px"
-            );
-
-            heartsContainer.appendChild(heart);
-
-            setTimeout(() => {
-                heart.remove();
-            }, 6000);
-        }
+        heart.appendChild(makeHeartSVG());
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 1700);
+      }, i * 60);
     }
+  }
 
+  /* -----------------------------------------------------------------
+     6. BACKGROUND AUDIO — optional, no autoplay, fails silently
+  ------------------------------------------------------------------ */
+  const bgMusic = document.getElementById('bgMusic');
+  const muteToggle = document.getElementById('muteToggle');
+  const muteIcon = document.getElementById('muteIcon');
+  let musicStarted = false;
 
-    /* =========================
-       ESC KEY
-    ========================= */
+  function tryPlayMusic() {
+    if (musicStarted || !bgMusic) return;
+    musicStarted = true;
 
-    document.addEventListener("keydown", (event) => {
+    bgMusic.volume = 0.35;
+    const playPromise = bgMusic.play();
 
-        if (event.key === "Escape") {
+    if (playPromise && typeof playPromise.then === 'function') {
+      playPromise
+        .then(() => { muteToggle.hidden = false; })
+        .catch(() => { muteToggle.hidden = true; }); // placeholder missing/blocked — site still works
+    }
+  }
 
-            messageScreen.classList.remove("active");
+  muteToggle.addEventListener('click', () => {
+    if (!bgMusic) return;
+    bgMusic.muted = !bgMusic.muted;
+    muteIcon.textContent = bgMusic.muted ? '\u266A\u0338' : '\u266A';
+    muteIcon.style.opacity = bgMusic.muted ? '0.5' : '1';
+  });
 
-            container.style.filter = "blur(0)";
-        }
+  bgMusic?.addEventListener('error', () => { muteToggle.hidden = true; }, { once: true });
 
-    });
-
-});
-```
-
+})();
